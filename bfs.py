@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     node4.add_neighbor(node3)
     
-    print("Breadth First Search")
+    # Breadth First Search
     path, traversal_order  = bfs(root, target, order=True)
-    print("Path: ", path)
-    print("Traversal order: ", traversal_order)
+    assert path == deque([root, node2, node4, target])
+    assert traversal_order == deque([root, node2, node3, node4, node5, target])

@@ -105,14 +105,12 @@ if __name__ == "__main__":
 
     node4.add_neighbor(node3)
     
-    print("Depth First Search")
+    # Depth First Search
     path, traversal_order  = dfs(root, target, order=True)
-    print("Path: ", path)
-    print("Traversal order: ", traversal_order)
+    assert path == deque([root, node3, node4, target])
+    assert traversal_order == deque([root, node3, node5, node4, target])
     
-    print()
-
-    print("Depth First Search Recursive Algorithm")
+    # Depth First Search Recursive Algorithm
     path, traversal_order  = dfs_recursive(root, target, order=True)
-    print("Path: ", path)
-    print("Traversal order: ", traversal_order)
+    assert path == deque([root, node2, node4, target])
+    assert traversal_order == deque([root, node2, node4, target, node3, node5])
