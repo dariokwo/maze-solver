@@ -12,23 +12,26 @@ class PQ:
         self.length = 0
         self.type = "MIN" if type_.upper() in ["MIN", "MINIMUM"] else "MAX"
 
-        # It's quite expensive to remove an element or update it's priority; O(nlog(n))
-        # So we can just mark it as removed and add an updated version to the queue
-        # This is bad if many/most elements in the queue are in removed set
-        # Solution idea: Maybe re-heapify after a certain threshold is reached
-        # A threshold can be a ratio of removed and total number of elements
+        # It's quite expensive to remove a job or update it's priority or value in the queue; O(nlog(n))
+        # So we can just mark it as removed (and enqueue an updated version)
+        # Next time we dequeue an element mark as removed, we discard it, and dequeue the next one
+
+        # This can become bad if many/most jobs in the queue are marked as removed
+        # Solution idea: re-heapify after a certain threshold is reached
+        # A threshold can be a ratio of removed and total number of jobs in the queue
         self.removed = {}
 
     def enqueue(self, value, priority) -> None:
         """Adds an element to the Priority queue"""
 
-        # if value exist in removed set and has same priority
+        # if job exist in removed set with same priority
         # Just remove it from the removed set and do nothing (Don't enqueue)
         if(value in self.removed and self.removed[value] == priority):
             del self.removed[value]
             self.length += 1
             return
 
+        # Add job and bubble up to the right position
         self.pQueue.append(Node(value, priority))
         self.length += 1
         self._bubble_up()
@@ -36,34 +39,27 @@ class PQ:
     def dequeue(self, return_priority: bool = False) -> object:
         """Remove and return MIN/MAX element from queue"""
         assert self.size() > 0
+
+        # Store top/job with min priority and pop it out
+        # Move last job to top and bubble down to the right position
         result = self.pQueue[0]
+        self.pQueue[0] = self.pQueue[len(self.pQueue) - 1]
+        self.pQueue.pop()
+        self._bubble_down()
+
         value = result.get_value()
         priority = result.get_priority()
 
-        while value in self.removed and self.removed[value] == priority:
-            # Move last to top
-            self.pQueue[0] = self.pQueue[self.length - 1]
-            self.pQueue.pop()
-            self._bubble_down()
-            print(self.removed)
+        # If this job, with same priority, has been mark as removed, ignore it
+        # and dequeue the next one
+        if result.get_value() in self.removed and self.removed[value] == priority:
             del self.removed[value]
-            self.length -= 1
-
-            assert self.size() > 0
-            result = self.pQueue[0]
-            value = result.get_value()
-            priority = result.get_priority()
-
-        # Move last to top
-        self.pQueue[0] = self.pQueue[self.length - 1]
-        self.pQueue.pop()
-        self._bubble_down()
-        self.length -= 1
+            return self.dequeue(return_priority)
 
         # Reduce queue size and return result
         self.length -= 1
-        if(return_priority == False): return result.Value
-        return result.Value, result.Priority
+        if(return_priority == False): return value
+        return value, priority
 
     def remove(self, value, priority) -> None:
         """Deleting an element in PQ"""
@@ -120,8 +116,6 @@ class PQ:
                 child_index = second_child
 
             # Bubble only  if check condition is not met
-            # print("Bubble down", self.length, child_index, parent_index)
-            # print(self.__str__())
             if self._check(parent_index, child_index): break
             self._swap(child_index, parent_index)
 
@@ -160,13 +154,22 @@ if __name__ == "__main__":
     assert pq.dequeue() == 1
     assert pq.size() == 3
     pq.__str__ == "[(4,2), (5,3), (3,8), ]"
+    assert pq.dequeue() == 4
+    assert pq.size() == 2
+    assert pq.__str__() == "[(5,3), (3,8), ]"
+    pq.enqueue(4, 2)
+    assert pq.size() == 3
+    pq.__str__() == "[(4,2), (5,3), (3,8), ]"
     
 
     # Testing remove
     pq.remove(4, 2)
     assert pq.size() == 2
-    pq.__str__ == "[(4,2), (5,3), (3,8), ]"
+    assert pq.__str__() == "[(4,2), (3,8), (5,3), ]"
+    assert pq.removed == {4:2}
 
     assert pq.dequeue() == 5
-
+    assert pq.removed == { }
+    assert pq.size() == 1
+    assert pq.__str__() == "[(3,8), ]"
 

@@ -16,7 +16,7 @@ class Node:
         # SORRY NOT SORRY!
         assert isinstance(neighbor, Node)
         
-        # If distance is provided, then this is a weighted graph
+        # This can be use as a Node for weighted graph
         # So, Neighbors = [(Node, distance), ...]
         if distance != None:
             neighbor = (neighbor, distance)
