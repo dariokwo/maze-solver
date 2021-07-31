@@ -4,6 +4,56 @@ import numpy as np
 from node import Node
 from dfs import dfs_recursive
 
+class IMaze:
+    def __init__(self, image_source = None) -> None:
+        self.Image_source = image_source
+        self.maze_2d = None
+        self.height = 0
+        self.width = 0
+
+        self.entrance = None
+        self.exit = None
+
+        if image_source != None:
+            self.get_2Dmaze()
+
+    def get_maze2D(self, imgSrc = None):
+        """REturn 2D maze of a given image"""
+
+        # If image was provided in constructor
+        if imgSrc == None and self.maze_2d != None:
+            return self.maze_2d, self.width, self.height
+
+        # Make sure image is provided
+        assert imgSrc != None
+
+        # Load and get image data
+        img = Image.open(imgSrc)
+        width, height = img.width, img.height
+        maze = np.reshape(list(img.getdata(0)), (width, height))
+
+        # Save data in class variables
+        self.maze_2d = maze
+        self.width = width
+        self.height = height
+        
+        # Return 2D array of the image pixels, image with, and height
+        return maze, width, height
+
+    def get_mazeGraph(self, maze = None, width = None, height = None):
+        
+        assert maze or self.maze_2d
+        if(maze == None):
+            maze = self.maze_2d
+            width = self.width
+            height = self.height
+
+        start_node = end_node = None
+        top_row = [None] * width
+
+
+
+    
 def compress_maze(maze, width, height):
     
     start_node = end_node = None
@@ -114,6 +164,10 @@ def create_2Dmaze(input_image):
             
 
 if __name__ == "__main__":
-    maze_start, maze_end = create_2Dmaze("./examples/tiny.png")
-    dfs_recursive(maze_start, maze_end, True)
+    # maze_start, maze_end = create_2Dmaze("./examples/tiny.png")
+    # dfs_recursive(maze_start, maze_end, True)
+    # print(maze_start) 
+
+    image_source  = "./examples/tiny.png"
+    maze = Image(image_source)
     

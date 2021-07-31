@@ -5,37 +5,44 @@ Priority Queue (PQ) Implementation
 from collections import deque
 from node import Node
 
-class PQ:
-    def __init__(self, type_: str = "MIN") -> None:
+class PQueue:
+    class Job:
+        """Jobs to be stored in a priority queue (PQueue)"""
+        def __init__(self, task, priority):
+            self.Task = task
+            self.Priority = priority
+    
+    def __init__(self, PQtype: str = "MIN") -> None:
         # Initializing a priority queue
         self.pQueue = []
         self.length = 0
-        self.type = "MIN" if type_.upper() in ["MIN", "MINIMUM"] else "MAX"
+        self.type = "MIN" if PQtype.upper() in ["MIN", "MINIMUM"] else "MAX"
 
-        # It's quite expensive to remove an element or update it's priority; O(nlog(n))
-        # So we can just mark it as removed and add an updated version to the queue
+        # It's quite expensive to remove or update a job's value or priority
+        # So we can just mark it as removed (and add an updated version to the queue)
         # This is bad if many/most elements in the queue are in removed set
         # Solution idea: Maybe re-heapify after a certain threshold is reached
         # A threshold can be a ratio of removed and total number of elements
         self.removed = {}
 
-    def enqueue(self, value, priority) -> None:
+    def enqueue(self, task, priority) -> None:
         """Adds an element to the Priority queue"""
 
         # if value exist in removed set and has same priority
         # Just remove it from the removed set and do nothing (Don't enqueue)
-        if(value in self.removed and self.removed[value] == priority):
-            del self.removed[value]
+        if(task in self.removed and self.removed[task] == priority):
+            del self.removed[task]
             self.length += 1
             return
 
-        self.pQueue.append(Node(value, priority))
+        self.pQueue.append(PQueue.Job(task, priority))
         self.length += 1
         self._bubble_up()
 
     def dequeue(self, return_priority: bool = False) -> object:
         """Remove and return MIN/MAX element from queue"""
         assert self.size() > 0
+        
         result = self.pQueue[0]
         value = result.get_value()
         priority = result.get_priority()
