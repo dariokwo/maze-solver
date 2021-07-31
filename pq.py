@@ -1,9 +1,7 @@
 """
 Priority Queue (PQ) Implementation
 """
-
 from collections import deque
-from node import Node
 
 class PQueue:
     class Job:
@@ -12,11 +10,11 @@ class PQueue:
             self.Task = task
             self.Priority = priority
     
-    def __init__(self, PQtype: str = "MIN") -> None:
-        # Initializing a priority queue
+    def __init__(self, qtype: str = "MIN") -> None:
+        # Initializing priority queue
         self.pQueue = []
-        self.length = 0
-        self.type = "MIN" if PQtype.upper() in ["MIN", "MINIMUM"] else "MAX"
+        self.qLength = 0
+        self.qType = "MIN" if qtype.upper() in ["MIN", "MINIMUM"] else "MAX"
 
         # It's quite expensive to remove or update a job's value or priority
         # So we can just mark it as removed (and add an updated version to the queue)
@@ -28,76 +26,70 @@ class PQueue:
     def enqueue(self, task, priority) -> None:
         """Adds an element to the Priority queue"""
 
-        # if value exist in removed set and has same priority
+        # if job exist in removed set with same priority
         # Just remove it from the removed set and do nothing (Don't enqueue)
-        if(task in self.removed and self.removed[task] == priority):
+        if self._is_removed(task, priority):
             del self.removed[task]
-            self.length += 1
+            self.qLength += 1
             return
 
+        # Append new job to end of queue
+        # then bubble it up to the right position
         self.pQueue.append(PQueue.Job(task, priority))
-        self.length += 1
+        self.qLength += 1
         self._bubble_up()
 
     def dequeue(self, return_priority: bool = False) -> object:
         """Remove and return MIN/MAX element from queue"""
         assert self.size() > 0
-        
-        result = self.pQueue[0]
-        value = result.get_value()
-        priority = result.get_priority()
 
-        while value in self.removed and self.removed[value] == priority:
-            # Move last to top
-            self.pQueue[0] = self.pQueue[self.length - 1]
-            self.pQueue.pop()
-            self._bubble_down()
-            print(self.removed)
-            del self.removed[value]
-            self.length -= 1
-
-            assert self.size() > 0
-            result = self.pQueue[0]
-            value = result.get_value()
-            priority = result.get_priority()
-
-        # Move last to top
-        self.pQueue[0] = self.pQueue[self.length - 1]
-        self.pQueue.pop()
+        # Store top/job with min priority and pop it out
+        # then bubble down last job from top of queue to right position
+        self._swap(0, len(self.pQueue) - 1)
+        job = self.pQueue.pop()
         self._bubble_down()
-        self.length -= 1
 
-        # Reduce queue size and return result
-        self.length -= 1
-        if(return_priority == False): return result.Value
-        return result.Value, result.Priority
+        task = job.Task
+        priority = job.Priority
 
-    def remove(self, value, priority) -> None:
-        """Deleting an element in PQ"""
-        # Add to removed set and decrease length of queue
+        # If this task has been removed, ignore it
+        # and dequeue the next one
+        if self._is_removed(task, priority):
+            del self.removed[task]
+            return self.dequeue(return_priority)
 
-        # The priority is important here
-        # Imagine if we re-enqueue a job with this value?
-        # When we dequeued it later, it will be marked as removed even if it's the recent one
-        # So we need the priority to tell them apart
-        # If we try to re-enqueued it with same priority, then just remove it from removed set
-        self.removed[value] = priority
-        self.length -= 1
+        # Reduce queue size and return task (with priority if needed)
+        self.qLength -= 1
+        if(return_priority == False): return task
+        return task, priority
 
-    def size(self):
-        """Returns count of elements in pQueue"""
-        return self.length
+    def remove(self, task, priority = None) -> None:
+        """Delete a job in PQueue by adding it in removed set and decreasing queue size"""
+        
+        # The priority is important if the removed job is re-enqueued
+        # with different priority
 
-    def get_queue(self):
-        """Return the whole queue"""
+        self.removed[task] = priority
+        self.qLength -= 1
+
+    def _is_removed(self, task, priority = None):
+        return task in self.removed and self.removed[task] == priority
+
+
+    def size(self) -> int:
+        """Returns number of jobs in pQueue"""
+        return self.qLength
+
+    def get_queue(self) -> deque:
+        """Return the whole pQueue"""
         return deque(self.pQueue)
 
     ##### Magic Methods ######
     def __str__(self):
-        """Return string representation of the Priority queue"""
+        """Return string representation of the PQueue"""
         result = ""
-        for node in self.pQueue:
-            result += "({},{}), ".format(node.get_value(), node.get_priority())
+        for job in self.pQueue:
+            result += "({},{}), ".format(job.Task, job.Priority)
         return "[" + result + "]"
 
     ##### PQ SPECIFIC FUNCTIONS #####
@@ -127,20 +119,22 @@ class PQueue:
                 child_index = second_child
 
             # Bubble only  if check condition is not met
-            # print("Bubble down", self.length, child_index, parent_index)
-            # print(self.__str__())
             if self._check(parent_index, child_index): break
             self._swap(child_index, parent_index)
 
             parent_index = child_index
 
     def _check(self, parent_index:int, child_index:int) -> bool:
-        """Compare two node"""
+        """
+        Compare two job and 
+        return true if the parent have less priority than child in case of MIN PQ
+        or else return true if the parent have high priority than child in case of MAX PQ
+        """
         parent_node = self.pQueue[parent_index]
         child_node = self.pQueue[child_index]
 
         # Parent should have smaller or equal priority to chidren in MIN PQ
-        if self.type == "MIN":
+        if self.qType == "MIN":
             return parent_node.Priority <= child_node.Priority
 
         # Parent should have larger or equal priority to chidren in MAX PQ
@@ -153,7 +147,7 @@ class PQueue:
 
 if __name__ == "__main__":
     """Testing"""
-    pq = PQ()
+    pq = PQueue()
 
     # Testing enqueue
     pq.enqueue(1, 0)
@@ -167,13 +161,22 @@ if __name__ == "__main__":
     assert pq.dequeue() == 1
     assert pq.size() == 3
     pq.__str__ == "[(4,2), (5,3), (3,8), ]"
+    assert pq.dequeue() == 4
+    assert pq.size() == 2
+    assert pq.__str__() == "[(5,3), (3,8), ]"
+    pq.enqueue(4, 2)
+    assert pq.size() == 3
+    pq.__str__() == "[(4,2), (5,3), (3,8), ]"
     
 
     # Testing remove
     pq.remove(4, 2)
     assert pq.size() == 2
-    pq.__str__ == "[(4,2), (5,3), (3,8), ]"
-
+    assert pq.__str__() == "[(4,2), (3,8), (5,3), ]"
+    assert pq.removed == {4:2}
+    
     assert pq.dequeue() == 5
-
+    assert pq.removed == { }
+    assert pq.size() == 1
+    assert pq.__str__() == "[(3,8), ]"
 

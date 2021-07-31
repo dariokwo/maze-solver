@@ -33,7 +33,7 @@ def dfs(root, target, order: bool = False) -> deque:
         # Push all neighbors to our stack
         for neighbor in current_node.get_neighbors():
             if not (neighbor in visited):
-                stack.append(neighbor)
+                stack.append(neighbor) # LIFO
                 visited[neighbor] = current_node
 
     # Trace path from target to root

@@ -33,7 +33,7 @@ def bfs(root, target, order: bool = False) -> deque:
         # Push all neighbors to our queue
         for neighbor in current_node.get_neighbors():
             if not (neighbor in visited):
-                queue.appendleft(neighbor)
+                queue.appendleft(neighbor) # FIFO
                 visited[neighbor] = current_node
 
     # Trace path from target to root

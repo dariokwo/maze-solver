@@ -1,6 +1,6 @@
 from collections import deque
 from node import Node
-from pq import PQ
+from pq import PQueue
 
 def dijkstra(start, target, order: bool = False) -> list:
     """
@@ -14,20 +14,19 @@ def dijkstra(start, target, order: bool = False) -> list:
     # AVOID ANY SURPRISES
     assert isinstance(start, Node) and isinstance(target, Node)
 
-    visited = {}
-    explored = {}
+    # Define containers
+    pq = PQueue()   # Priority queue: values = [(job, priority), ... ]
+    visited = {} # Visited, but not explored
+    explored = {} # Visited and explored
 
+    
     # visited[Node] = (previous node, distance from previous node)
     visited[start] = (None, 0)
-    
-    # pq.enqueue accepts value = Node, and priority = distance
-    pq = PQ()
+    # pq.enqueue: parameters = (Node, distance from start to this node)
     pq.enqueue(start, 0)
+
     traversal_order = deque()
     total_distance = 0
-
-    print("PQ: ", pq)
-    print()
 
     while pq.size() > 0:
         # Pop and explore node with smallest distance from start node
@@ -44,35 +43,29 @@ def dijkstra(start, target, order: bool = False) -> list:
             (node, distance) = neighbor
             new_distance = total_distance + distance
 
-            # Add to PQ
+            # Add to PQ if not visited
             if not (node in visited):
                 pq.enqueue(node, new_distance)
                 visited[node] = (current_node, new_distance)
 
-            # Update distance or priority in PQ
+            # If visited, but new distance is smaller
             elif not (node in explored) and visited[node][1] > new_distance:
-                # print("Remove", (node, visited[node][1]))
+                # Remove from pQ and enqueue same node with new distance/priority
+                # Also updated the visited set
                 pq.remove(node, visited[node][1])
-                # print(pq.removed)
                 pq.enqueue(node, new_distance)
                 visited[node] = (current_node, new_distance)
-    
-        explored[current_node] = True
 
-        print("Pop min: ", (current_node, total_distance))
-        print("Neighbors", current_node.get_neighbors())
-        print("PQ: ", pq)
-        print("Visited", visited)
-        print("explored", explored)
-        print(pq.removed)
-        print()
-    
+        # A Node is explored after visiting all it's neighbors
+        explored[current_node] = True    
 
+    # Trace path from target to root
     path = deque()
     while target != None and target in visited:
         path.appendleft(target)
         target = visited[target][0]
 
+    # Return path and total distance from start to target (And traversal order if needed)
     if order == True: return path, total_distance, traversal_order
     return path, total_distance
 
