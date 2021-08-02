@@ -128,10 +128,10 @@ class PQ:
 
         # Parent should have smaller or equal priority to chidren in MIN PQ
         if self.type == "MIN":
-            return parent_node.Priority <= child_node.Priority
+            return parent_node.get_priority() <= child_node.get_priority()
 
         # Parent should have larger or equal priority to chidren in MAX PQ
-        return parent_node.Priority >= child_node.Priority
+        return parent_node.get_priority() >= child_node.get_priority()
 
     def _swap(self, index1:int, index2:int) -> None:
         """Swap values in a pQueue in place"""
