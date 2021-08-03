@@ -1,6 +1,6 @@
 from collections import deque
 from node import Node
-from pq import PQ
+from pq import PQueue
 
 def dijkstra(start, target, order: bool = False) -> list:
     """
@@ -15,7 +15,7 @@ def dijkstra(start, target, order: bool = False) -> list:
     assert isinstance(start, Node) and isinstance(target, Node)
 
     # Define containers
-    pq = PQ()   # Priority queue: values = [(job, priority), ... ]
+    pq = PQueue()   # Priority queue: values = [(job, priority), ... ]
     visited = {} # Visited, but not explored
     explored = {} # Visited and explored
 
@@ -38,27 +38,27 @@ def dijkstra(start, target, order: bool = False) -> list:
         if current_node == target: break
         
         # Visit all neighbors of current node
-        for neighbor in current_node.get_neighbors():
-            # neighbor = (node, distance) for weighted graph
-            (node, distance) = neighbor
+        for edge in current_node.get_edges_weighted():
+            # edge = (neighbor, distance) for weighted graph
+            (neighbor, distance) = edge
             new_distance = total_distance + distance
 
             # Add to PQ if not visited
-            if not (node in visited):
-                pq.enqueue(node, new_distance)
-                visited[node] = (current_node, new_distance)
+            if not (neighbor in visited):
+                pq.enqueue(neighbor, new_distance)
+                visited[neighbor] = (current_node, new_distance)
 
             # If visited, but new distance is smaller
-            elif not (node in explored) and visited[node][1] > new_distance:
+            elif not (neighbor in explored) and visited[neighbor][1] > new_distance:
                 # Remove from pQ and enqueue same node with new distance/priority
                 # Also updated the visited set
-                pq.remove(node, visited[node][1])
-                pq.enqueue(node, new_distance)
-                visited[node] = (current_node, new_distance)
+                pq.remove(neighbor, visited[neighbor][1])
+                pq.enqueue(neighbor, new_distance)
+                visited[neighbor] = (current_node, new_distance)
 
         # A Node is explored after visiting all it's neighbors
         explored[current_node] = True    
-
+    
     # Trace path from target to root
     path = deque()
     while target != None and target in visited:
@@ -73,28 +73,28 @@ if __name__ == "__main__":
     # Creating a linked graph
     root = Node(1)
     node2 = Node(2)
-    root.add_neighbor(node2, 2)
-    node2.add_neighbor(root, 2)
+    root.add_edge(node2, 2)
+    node2.add_edge(root, 2)
     
     node3 = Node(3)
-    root.add_neighbor(node3, 3)
-    node3.add_neighbor(root, 3)
+    root.add_edge(node3, 3)
+    node3.add_edge(root, 3)
     
     node4 = Node(4)
-    node2.add_neighbor(node4, 4)
-    node4.add_neighbor(node2, 4)
+    node2.add_edge(node4, 4)
+    node4.add_edge(node2, 4)
 
-    node3.add_neighbor(node4, 2)
+    node3.add_edge(node4, 2)
 
     node5 = Node(5)
-    node3.add_neighbor(node5, 6)
-    node5.add_neighbor(node3, 6)
+    node3.add_edge(node5, 6)
+    node5.add_edge(node3, 6)
 
     target = Node(6)
-    node4.add_neighbor(target, 5)
-    target.add_neighbor(node4, 5)
+    node4.add_edge(target, 5)
+    target.add_edge(node4, 5)
 
-    node4.add_neighbor(node3, 2)
+    node4.add_edge(node3, 2)
     
     
     print("Dijkstra Algorithm")

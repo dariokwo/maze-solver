@@ -1,40 +1,46 @@
 # -*- coding: utf-8 -*-
+from typing import Deque
+
 class Node:
-    def __init__(self, value, priority = None) -> None:
-        self.Value = value
-        self.Priority  = priority # To be use by priority queue
-        self.Neighbors = [] # Neighbors = [Node, ...]
+    class Edge:
+        def __init__(self, neighbor, distance = 1):
+            self.Neighbor = neighbor
+            self.Distance = distance
 
-    ###### Setters ######
+    def __init__(self, value) -> None:
+        self.Value = value
+        # edges = [(neighbor, distance), ...]
+        # All distances = 1 for unweighted graphs
+        self.edges = []
+        
+
     def set_value(self, value):
+        """Sets the value for this node"""
         self.Value = value
-
-    def set_priority(self, priority):
-        self.Priority  = priority
-
-    def add_neighbor(self, neighbor, distance = None) -> None:
-        # SORRY NOT SORRY!
-        assert isinstance(neighbor, Node)
-        
-        # This can be use as a Node for weighted graph
-        # So, Neighbors = [(Node, distance), ...]
-        if distance != None:
-            neighbor = (neighbor, distance)
-        
-        self.Neighbors.append(neighbor)
-
-    ###### Getters ######
+    
     def get_value(self):
+        """Returns the value of this node"""
         return self.Value
 
-    def get_priority(self):
-        return self.Priority
+    def add_edge(self, neighbor, distance = 1) -> None:
+        """Add an edge to the list of edges for this node"""
 
-    def get_neighbors(self):
-        return self.Neighbors
+        # SORRY NOT SORRY!
+        assert isinstance(neighbor, Node)
+        # edge = [(neighbor, distance), ...]
+        # distance = 1, for unweighted graph
+        self.edges.append(Node.Edge(neighbor, distance))
 
-    ###### Magic methods ######
+    def get_edges(self):
+        """Return all edges (without weights)"""
+        return [edge.Neighbor for edge in self.edges]
+
+    def get_edges_weighted(self):
+        """Return all edges (with weights)"""
+        return [(edge.Neighbor, edge.Distance) for edge in self.edges]
+
     def __str__(self):
+        """Returns a string representation of this node's value"""
         # Prints the current node value
         return "{}".format(self.Value)
         
@@ -44,30 +50,27 @@ class Node:
 
 # Test Example
 if __name__ == "__main__":
-    root = Node(1, 2)
+    root = Node(1)
     
-    # Testing get_value and get_priority
+    # Testing get_value
     assert root.get_value() == 1
-    assert root.get_priority() == 2
-
     node2 = Node(2)
 
-    # Testing set_value and set_priority
+    # Testing set_value
     node2.set_value(88)
-    node2.set_priority(9)
     assert node2.get_value() == 88
-    assert node2.get_priority() == 9
 
-    # Tesing add_neighbor and get_neighbor
-    root.add_neighbor(node2)
-    node2.add_neighbor(root)
+    # Tesing add_edge, get_edges, and get_edges_weighted
+    root.add_edge(node2)
+    node2.add_edge(root)
+    assert root.get_edges() == [node2]
+    assert root.get_edges_weighted() == [(node2, 1)]
     
     node3 = Node(3)
-    root.add_neighbor(node3)
-    node3.add_neighbor(root)
-
-    node2.add_neighbor(node3)
+    root.add_edge(node3)
+    node3.add_edge(root)
+    node2.add_edge(node3)
 
     assert root.__str__() == "1"
     assert root.get_value() == 1
-    assert len(root.get_neighbors()) == 2
+    assert len(root.get_edges()) == 2

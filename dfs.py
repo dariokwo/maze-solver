@@ -31,7 +31,7 @@ def dfs(root, target, order: bool = False) -> deque:
         if current_node == target: break
         
         # Push all neighbors to our stack
-        for neighbor in current_node.get_neighbors():
+        for neighbor in current_node.get_edges():
             if not (neighbor in visited):
                 stack.append(neighbor) # LIFO
                 visited[neighbor] = current_node
@@ -63,7 +63,7 @@ def dfs_recursive(root, target, order: bool = False) -> deque:
         if root == target: return
         
         # Visit all neighbors
-        for neighbor in root.get_neighbors():
+        for neighbor in root.get_edges():
             if not (neighbor in visited):
                 recur(neighbor, root)
 
@@ -82,28 +82,28 @@ if __name__ == "__main__":
     # Creating a linked graph
     root = Node(1)
     node2 = Node(2)
-    root.add_neighbor(node2)
-    node2.add_neighbor(root)
+    root.add_edge(node2)
+    node2.add_edge(root)
     
     node3 = Node(3)
-    root.add_neighbor(node3)
-    node3.add_neighbor(root)
+    root.add_edge(node3)
+    node3.add_edge(root)
     
     node4 = Node(4)
-    node2.add_neighbor(node4)
-    node4.add_neighbor(node2)
+    node2.add_edge(node4)
+    node4.add_edge(node2)
 
-    node3.add_neighbor(node4)
+    node3.add_edge(node4)
 
     node5 = Node(5)
-    node3.add_neighbor(node5)
-    node5.add_neighbor(node3)
+    node3.add_edge(node5)
+    node5.add_edge(node3)
 
     target = Node(6)
-    node4.add_neighbor(target)
-    target.add_neighbor(node4)
+    node4.add_edge(target)
+    target.add_edge(node4)
 
-    node4.add_neighbor(node3)
+    node4.add_edge(node3)
     
     # Depth First Search
     path, traversal_order  = dfs(root, target, order=True)
